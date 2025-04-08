@@ -14,6 +14,10 @@ phases:
       - echo "Building the Docker image..."
       # Build the Docker image with the name $ImageName
       - docker build -t $ImageName:latest .
+
+      - echo "Building the Docker image..."
+      
+      - docker build -t $ImageName -f ./Dockerfile . || { echo 'Docker build failed'; exit 1; }
       
       # Tag the Docker image with the ECR repository URL
       - docker tag $ImageName:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ImageName:latest
