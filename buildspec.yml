@@ -17,7 +17,7 @@ phases:
   build:
     commands:
       - echo "Building the Docker image..."
-      - docker build -t $ImageName:latest .
+      - docker build -t $ImageName:latest -f ./<your-subdirectory-if-any>/Dockerfile ./<your-subdirectory-if-any> # update path if needed
 
   post_build:
     commands:
