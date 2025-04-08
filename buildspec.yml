@@ -1,0 +1,27 @@
+version: 0.2
+
+env:
+  variables:
+    ImageName: "sheehan-image"  # This is your image name
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+
+  build:
+    commands:
+      - echo "Building the Docker image..."
+      # Build the Docker image with the name $ImageName
+      - docker build -t $ImageName:latest .
+      
+      # Tag the Docker image with the ECR repository URL
+      - docker tag $ImageName:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ImageName:latest
+
+      - echo "Pushing the Docker image to ECR..."
+      
+      # Authenticate to AWS ECR
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      
+      # Push the image to ECR
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ImageName:latest

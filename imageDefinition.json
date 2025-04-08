@@ -1,0 +1,7 @@
+[
+    {
+      "name": "assignment3-container",
+      "imageUri": "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/assignment3-repo:latest"
+    }
+  ]
+  
