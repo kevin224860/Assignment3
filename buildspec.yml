@@ -2,26 +2,20 @@ version: 0.2
 
 env:
   variables:
-    ImageName: "sheehan-image"
+    ImageName: assignment3-repo
 
 phases:
-  install:
-    runtime-versions:
-      docker: 18
-
   pre_build:
     commands:
-      - echo "Logging in to Amazon ECR..."
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 539247461447.dkr.ecr.ca-central-1.amazonaws.com
   build:
     commands:
-      - echo "Building the Docker image..."
-      - docker build -t $ImageName:latest -f ./<your-subdirectory-if-any>/Dockerfile ./<your-subdirectory-if-any> # update path if needed
-
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $ImageName -f Dockerfile .
+      - docker tag $ImageName:latest 539247461447.dkr.ecr.ca-central-1.amazonaws.com/$ImageName:latest
   post_build:
     commands:
-      - echo "Tagging the image..."
-      - docker tag $ImageName:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ImageName:latest
-      - echo "Pushing the image to ECR..."
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ImageName:latest
+      - echo Pushing the Docker image...
+      - docker push 539247461447.dkr.ecr.ca-central-1.amazonaws.com/$ImageName:latest
