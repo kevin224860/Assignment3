@@ -3,25 +3,43 @@ version: 0.2
 env:
   variables:
     ImageName: assignment3-repo
+    AWS_ACCOUNT_ID: 539247461447
+    AWS_REGION: ca-central-1
+    ECR_REPO: 539247461447.dkr.ecr.ca-central-1.amazonaws.com/assignment3-repo
+    CONTAINER_NAME: assignment3-container  # ✅ Change this to match ECS task definition container
 
 phases:
   pre_build:
     commands:
+      - echo Extracting commit hash...
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+
+      - echo Installing Trivy...
+      - yum install -y wget gnupg
+      - wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor -o /etc/pki/rpm-gpg/Aqua_Trivy.gpg
+      - echo -e "[trivy]\nname=Trivy Repository\nbaseurl=https://aquasecurity.github.io/trivy-repo/rpm/releases/\$releasever/\$basearch/\nenabled=1\ngpgcheck=1\ngpgkey=file:///etc/pki/rpm-gpg/Aqua_Trivy.gpg" | tee /etc/yum.repos.d/trivy.repo
+      - yum -y update && yum install -y trivy
+
       - echo Logging in to Amazon ECR...
-      - docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-      - aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 539247461447.dkr.ecr.ca-central-1.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+
   build:
-    commands: 
-      - echo Build started on `date`
+    commands:
       - echo Building the Docker image...
-      - docker build -t $ImageName -f Dockerfile .
-      - docker tag $ImageName:latest 539247461447.dkr.ecr.ca-central-1.amazonaws.com/$ImageName:latest
+      - docker build -t $ImageName:$IMAGE_TAG .
+      - docker tag $ImageName:$IMAGE_TAG $ECR_REPO:latest
+
   post_build:
     commands:
+      - echo Running Trivy vulnerability scan...
+      - trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed $ECR_REPO:latest
+
       - echo Pushing the Docker image...
-      - docker push 539247461447.dkr.ecr.ca-central-1.amazonaws.com/$ImageName:latest
-      - echo Writing image definitions file...
-      - printf '[{"name":"<your-container-name>","imageUri":"539247461447.dkr.ecr.ca-central-1.amazonaws.com/%s:latest"}]' $ImageName > imagedefinitions.json
+      - docker push $ECR_REPO:latest
+
+      - echo Creating imagedefinitions.json for ECS...
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $ECR_REPO:latest > imagedefinitions.json
 
 artifacts:
   files:
