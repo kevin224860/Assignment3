@@ -5,7 +5,7 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return jsonify({
-        "message": "Hello from Sheehan ECS Container."
+        "message": "Hello from Sheehan ECS Container!"
     })
 
 if __name__ == "__main__":
