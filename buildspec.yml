@@ -9,7 +9,6 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-
       - aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 539247461447.dkr.ecr.ca-central-1.amazonaws.com
   build:
     commands: 
@@ -21,3 +20,9 @@ phases:
     commands:
       - echo Pushing the Docker image...
       - docker push 539247461447.dkr.ecr.ca-central-1.amazonaws.com/$ImageName:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"<your-container-name>","imageUri":"539247461447.dkr.ecr.ca-central-1.amazonaws.com/%s:latest"}]' $ImageName > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
