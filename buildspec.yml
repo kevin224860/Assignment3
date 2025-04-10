@@ -10,7 +10,7 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 539247461447.dkr.ecr.ca-central-1.amazonaws.com
   build:
-    commands:
+    commands: 
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t $ImageName -f Dockerfile .
