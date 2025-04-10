@@ -9,5 +9,5 @@ def home():
     })
 
 if __name__ == "__main__":
-    # Listen on all interfaces so that it works in the Docker container
+    # Listen on all ports
     app.run(host="0.0.0.0", port=5000)
